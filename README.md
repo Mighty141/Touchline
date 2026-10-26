@@ -1,10 +1,10 @@
-# Touchline — Midnight Editorial Glass Edition (football-data.org only)
+# Touchline
 
-Touchline is a Django Premier League portal with a Midnight Editorial visual identity and translucent glass styling. **football-data.org is the sole football-data provider**; API-Football has been removed from the active configuration and runtime paths.
+Touchline is a Django Premier League portal with a Midnight Editorial visual identity and translucent glass styling.
 
 ## Data source
 
-The app reads the key from `FOOTBALL_DATA_ORG_API_KEY` in `.env` and requests data from football-data.org. League IDs, season IDs, event/statistics endpoints and data coverage are provider-dependent. The app does not invent results or statistics when the API does not return them.
+The app  requests data from football-data.org. League IDs, season IDs, event/statistics endpoints and data coverage are provider-dependent. The app does not invent results or statistics when the API does not return them.
 
 ## Quick start (Windows PowerShell)
 
