@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ match.home_team.name }} vs {{ match.away_team.name }} — Touchline{% endblock %}
+{% block content %}
+<section class="page-banner"><div class="container py-5">
+  <div class="eyebrow">MATCH CENTRE / DEEP DIVE</div>
+  <p class="mb-2"><a href="/matches/">← Back to fixtures</a></p>
+  <h1>{{ match.home_team.name }} <span class="gradient-text">vs</span> {{ match.away_team.name }}</h1>
+  <p>{{ match.match_date|date:"l, d F Y · g:i A" }}{% if match.venue %} · {{ match.venue }}{% endif %}{% if match.matchweek %} · Matchweek {{ match.matchweek }}{% endif %}</p>
+</div></section>
+<section class="container section-pad">
+  <div class="match-detail-score feature-card mb-4">
+    <div class="feature-top"><span class="pill">{{ match.competition }}</span><span class="status-chip">{{ match.get_status_display }}</span></div>
+    <div class="detail-score-grid">
+      <div class="detail-club">{% if match.home_team.crest_url %}<img class="detail-crest crest-image" src="{{ match.home_team.crest_url }}" alt="{{ match.home_team.name }} crest" data-api-id="{{ match.home_team.api_id }}">{% else %}<div class="detail-crest fallback-crest">{{ match.home_team.short_name|slice:":1" }}</div>{% endif %}<h2>{{ match.home_team.name }}</h2><span>HOME</span></div>
+      <div class="detail-score">{% if match.status == "FT" or match.status == "LIVE" %}{{ match.home_score }} <span>:</span> {{ match.away_score }}{% else %}<span class="score-placeholder">VS</span>{% endif %}
+        {% if match.halftime_home_score != None and match.halftime_away_score != None %}<small>Half-time {{ match.halftime_home_score }}–{{ match.halftime_away_score }}</small>{% endif %}
+      </div>
+      <div class="detail-club">{% if match.away_team.crest_url %}<img class="detail-crest crest-image" src="{{ match.away_team.crest_url }}" alt="{{ match.away_team.name }} crest" data-api-id="{{ match.away_team.api_id }}">{% else %}<div class="detail-crest fallback-crest">{{ match.away_team.short_name|slice:":1" }}</div>{% endif %}<h2>{{ match.away_team.name }}</h2><span>AWAY</span></div>
+    </div>
+  </div>
+
+  {% if api_error %}<div class="alert alert-warning">Some in-depth data could not be loaded: {{ api_error }}. Basic match information is still available; availability depends on football-data.org coverage and your subscription.</div>{% endif %}
+
+  <div class="section-heading"><div><div class="eyebrow dark-eyebrow">GOALS & INCIDENTS / 01</div><h2>Who scored?</h2><p class="text-muted small">Goal timeline, scorers, assists, cards, substitutions and VAR events when supplied by the API.</p></div></div>
+  <div class="feature-panel detail-panel mb-5">
+    {% for event in scorers %}<div class="timeline-event"><div class="event-minute">{{ event.minute }}</div><div class="event-dot"></div><div class="event-copy"><strong>{{ event.player|default:"Goal scorer unavailable" }}</strong><span>{{ event.team }}{% if event.assist %} · Assist: {{ event.assist }}{% endif %}</span>{% if event.detail %}<small>{{ event.detail }}</small>{% endif %}</div><span class="event-tag">GOAL</span></div>{% empty %}<p class="detail-empty">Scorer information isn't available in the response for this match yet.</p>{% endfor %}
+    {% if events %}{% for event in events %}{% if not event.is_goal %}<div class="timeline-event secondary-event"><div class="event-minute">{{ event.minute }}</div><div class="event-dot"></div><div class="event-copy"><strong>{{ event.type }}</strong><span>{{ event.player }}{% if event.team %} · {{ event.team }}{% endif %}</span>{% if event.detail %}<small>{{ event.detail }}</small>{% endif %}</div></div>{% endif %}{% endfor %}{% endif %}
+  </div>
+
+  <div class="section-heading"><div><div class="eyebrow dark-eyebrow">MATCH METRICS / 02</div><h2>Match statistics</h2><p class="text-muted small">The standard football-data.org match endpoint does not supply possession, shots or player match-stat tables. Goals, bookings and substitutions are shown above when returned by the API.</p></div></div>
+  <div class="table-responsive standings-wrap mb-5"><table class="table standings-table align-middle mb-0"><thead><tr><th>{{ match.home_team.short_name }}</th><th class="text-center">Statistic</th><th class="text-end">{{ match.away_team.short_name }}</th></tr></thead><tbody>
+    {% for row in stats %}<tr><td class="fw-semibold">{{ row.home }}</td><td class="text-center text-muted">{{ row.label }}</td><td class="text-end fw-semibold">{{ row.away }}</td></tr>{% empty %}<tr><td colspan="3" class="detail-empty">Detailed match statistics haven't been returned for this fixture. This may depend on the API's coverage or your plan.</td></tr>{% endfor %}
+  </tbody></table></div>
+
+  <div class="section-heading"><div><div class="eyebrow dark-eyebrow">PLAYER PERFORMANCE / 03</div><h2>Player statistics</h2><p class="text-muted small">Minutes, rating, goal contributions, shooting, passing accuracy, key passes, defensive actions, duels, dribbles, fouls, penalties and cards when supplied by the API.</p></div></div>
+  <div class="table-responsive standings-wrap mb-5"><table class="table standings-table align-middle mb-0"><thead><tr><th>Player</th><th>Team</th><th>Pos.</th><th class="text-end">Min</th><th class="text-end">Rating</th><th class="text-end">G</th><th class="text-end">A</th><th class="text-end">Shots</th><th class="text-end">On target</th><th class="text-end">Passes</th><th class="text-end">Key passes</th><th class="text-end">Pass %</th><th class="text-end">Tackles</th><th class="text-end">Blocks</th><th class="text-end">Interceptions</th><th class="text-end">Duels won/total</th><th class="text-end">Dribbles</th><th class="text-end">Fouls drawn</th><th class="text-end">Fouls committed</th><th class="text-end">Pens scored/missed</th><th class="text-end">YC</th><th class="text-end">RC</th></tr></thead><tbody>
+    {% for player in players %}<tr><td class="fw-semibold">{{ player.name }}</td><td>{{ player.team }}</td><td>{{ player.position }}</td><td class="text-end">{{ player.minutes }}</td><td class="text-end">{{ player.rating }}</td><td class="text-end">{{ player.goals }}</td><td class="text-end">{{ player.assists }}</td><td class="text-end">{{ player.shots }}</td><td class="text-end">{{ player.shots_on }}</td><td class="text-end">{{ player.passes }}</td><td class="text-end">{{ player.key_passes }}</td><td class="text-end">{{ player.pass_accuracy }}</td><td class="text-end">{{ player.tackles }}</td><td class="text-end">{{ player.blocks }}</td><td class="text-end">{{ player.interceptions }}</td><td class="text-end">{{ player.duels }}/{{ player.duels_total }}</td><td class="text-end">{{ player.dribbles }}/{{ player.dribbles_attempted }}</td><td class="text-end">{{ player.fouls_drawn }}</td><td class="text-end">{{ player.fouls_committed }}</td><td class="text-end">{{ player.penalties_scored }}/{{ player.penalties_missed }}</td><td class="text-end">{{ player.yellow }}</td><td class="text-end">{{ player.red }}</td></tr>{% empty %}<tr><td colspan="20" class="detail-empty">Player-level match statistics aren't available for this fixture or API plan.</td></tr>{% endfor %}
+  </tbody></table></div>
+
+  <div class="section-heading"><div><div class="eyebrow dark-eyebrow">PROVIDER DATA / 04</div><h2>Match information</h2></div></div>
+  <div class="row g-3 mb-5">
+    <div class="col-6 col-lg-3"><div class="stat-card"><span class="stat-icon lilac">#</span><div><div class="stat-label">Provider match ID</div><div class="stat-number detail-small">{{ match.api_match_id|default:"—" }}</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><span class="stat-icon mint-bg">◷</span><div><div class="stat-label">Status</div><div class="stat-number detail-small">{{ match.get_status_display }}</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><span class="stat-icon sky">⌂</span><div><div class="stat-label">Venue</div><div class="stat-number detail-small">{{ match.venue|default:"Not supplied" }}</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><span class="stat-icon peach">▦</span><div><div class="stat-label">Round</div><div class="stat-number detail-small">{{ match.round_name|default:match.matchweek|default:"Not supplied" }}</div></div></div></div>
+  </div>
+  <p class="text-muted small">Match data is sourced from football-data.org API v4. Goals, bookings and substitutions are shown when supplied. Possession, shots and player-level match statistics are not available from the standard match endpoint.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,1 @@
+{"name":"touchline-node-demo","version":"1.0.0","description":"Touchline Node.js API demo","main":"server.js","scripts":{"start":"node server.js"},"dependencies":{"express":"^4.21.2"}}
